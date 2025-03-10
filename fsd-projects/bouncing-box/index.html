@@ -1,100 +1,90 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>Bouncing Box</title>
-	<script src="jquery.min.js"></script>
-	<style>
-		.box {
-			width: 70px;
-			height: 70px;
-			background-color: teal;
-			font-size: 300%;
-			text-align: center;
-			user-select: none;
-			display: block;
-			position: absolute;
-			top: 100px;
-			/* Change me! */
-			left: 0px;
-		}
-
-		.board {
-			height: 100vh;
-		}
-	</style>
-	<!-- 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Bouncing Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: url('/mnt/data/image.png') no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+        }
+        #box {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
 </head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="box"></div>
 
-<body class="board">
-	<!-- HTML for the box -->
-	<div class="box">?</div>
+    <script>
+        let positionX = 0;
+        let speed = 10;
+        let points = 0;
+        let direction = 1;
+        const box = document.getElementById("box");
+        const scoreDisplay = document.getElementById("score");
+        let misclicks = 0;
 
-	<script>
-		(function () {
-			'use strict'
-			/* global jQuery */
+        function moveBoxTo(x) {
+            box.style.left = x + "px";
+        }
 
-			//////////////////////////////////////////////////////////////////
-			/////////////////// SETUP DO NOT DELETE //////////////////////////
-			//////////////////////////////////////////////////////////////////
+        function update() {
+            positionX += speed * direction;
+            moveBoxTo(positionX);
 
-			var box = jQuery('.box');	// reference to the HTML .box element
-			var board = jQuery('.board');	// reference to the HTML .board element
-			var boardWidth = board.width();	// the maximum X-Coordinate of the screen
+            if (positionX >= window.innerWidth - box.offsetWidth) {
+                direction = -1;
+            }
+            if (positionX <= 0) {
+                direction = 1;
+            }
+        }
 
-			// Every 50 milliseconds, call the update Function (see below)
-			setInterval(update, 50);
+        box.addEventListener("click", function () {
+            positionX = Math.floor(Math.random() * (window.innerWidth - box.offsetWidth));
+            speed += 3;
+            points += 1;
+            scoreDisplay.innerText = "Score: " + points;
+            changeBoxColor();
+        });
 
-			// Every time the box is clicked, call the handleBoxClick Function (see below)
-			box.on('click', handleBoxClick);
+        function changeBoxColor() {
+            let colors = ["red", "blue", "green", "yellow", "purple", "orange"];
+            box.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        }
 
-			// moves the Box to a new position on the screen along the X-Axis
-			function moveBoxTo(newPositionX) {
-				box.css("left", newPositionX);
-			}
+        document.addEventListener("click", function (event) {
+            if (event.target !== box) {
+                misclicks++;
+                if (misclicks >= 10) {
+                    alert("Game Over! You mis-clicked 10 times.");
+                    location.reload();
+                }
+            }
+        });
 
-			// changes the text displayed on the Box
-			function changeBoxText(newText) {
-				box.text(newText);
-			}
-
-			//////////////////////////////////////////////////////////////////
-			/////////////////// YOUR CODE BELOW HERE /////////////////////////
-			//////////////////////////////////////////////////////////////////
-
-			// TODO 2 - Variable declarations 
-
-
-
-			/* 
-			This Function will be called 20 times/second. Each time it is called,
-			it should move the Box to a new location. If the box drifts off the screen
-			turn it around! 
-			*/
-			function update() {
-
-
-			};
-
-			/* 
-			This Function will be called each time the box is clicked. Each time it is called,
-			it should increase the points total, increase the speed, and move the box to
-			the left side of the screen.
-			*/
-			function handleBoxClick() {
-
-
-			};
-
-
-
-
-
-		})();
-	</script>
+        setInterval(update, 50);
+    </script>
 </body>
-
 </html>
