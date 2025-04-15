@@ -3,88 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fun Bouncing Game</title>
+    <title>Circularity</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: url('/mnt/data/image.png') no-repeat center center fixed;
-            background-size: cover;
-            text-align: center;
         }
-        #box {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-            cursor: pointer;
-        }
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            font-weight: bold;
+        canvas {
+            display: block;
+            background-color: #222;
         }
     </style>
 </head>
 <body>
-    <div id="score">Score: 0</div>
-    <div id="box"></div>
-
+    <canvas id="canvas"></canvas>
     <script>
-        let positionX = 0;
-        let speed = 10;
-        let points = 0;
-        let direction = 1;
-        const box = document.getElementById("box");
-        const scoreDisplay = document.getElementById("score");
-        let misclicks = 0;
+        // Get the canvas and context
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        function moveBoxTo(x) {
-            box.style.left = x + "px";
+        var circles = []; // Array to store all circles
+
+        // Function to create and draw a circle randomly on the canvas
+        function drawCircle() {
+            var circle = draw.randomCircleInArea(canvas, true, true, "#999", 2);
+            // Apply random velocity to the circle
+            physikz.addRandomVelocity(circle, canvas, 5, 5);
+            // Add the circle to the view (the canvas)
+            view.addChild(circle);
+            // Add the circle to the array for future updates
+            circles.push(circle);
         }
 
-        function update() {
-            positionX += speed * direction;
-            moveBoxTo(positionX);
+        // Create the initial 5 circles
+        for (var i = 0; i < 5; i++) {
+            drawCircle();
+        }
 
-            if (positionX >= window.innerWidth - box.offsetWidth) {
-                direction = -1;
+        // Function to update the position of a circle
+        function updateCircles() {
+            for (var i = 0; i < circles.length; i++) {
+                physikz.updatePosition(circles[i]);
+                game.checkCirclePosition(circles[i]);
             }
-            if (positionX <= 0) {
-                direction = 1;
-            }
         }
 
-        box.addEventListener("click", function () {
-            positionX = Math.floor(Math.random() * (window.innerWidth - box.offsetWidth));
-            speed += 3;
-            points += 1;
-            scoreDisplay.innerText = "Score: " + points;
-            changeBoxColor();
-        });
+        // Function to loop circles around the screen
+        function loopCircles() {
+            for (var i = 0; i < circles.length; i++) {
+                var circle = circles[i];
+                if (circle.x > canvas.width) {
+                    circle.x = 0; // Move to left side
+                } else if (circle.x < 0) {
+                    circle.x = canvas.width; // Move to right side
+                }
 
-        function changeBoxColor() {
-            let colors = ["red", "blue", "green", "yellow", "purple", "orange"];
-            box.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        document.addEventListener("click", function (event) {
-            if (event.target !== box) {
-                misclicks++;
-                if (misclicks >= 10) {
-                    alert("Game Over! You mis-clicked 10 times.");
-                    location.reload();
+                if (circle.y > canvas.height) {
+                    circle.y = 0; // Move to top side
+                } else if (circle.y < 0) {
+                    circle.y = canvas.height; // Move to bottom side
                 }
             }
-        });
+        }
 
-        setInterval(update, 50);
+        // Create 100 circles in total
+        for (var i = 0; i < 100; i++) {
+            drawCircle();
+        }
+
+        // Main animation loop
+        function animate() {
+            context.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            updateCircles(); // Update position and check boundaries
+            loopCircles(); // Loop circles across edges
+            requestAnimationFrame(animate); // Keep animating
+        }
+
+        // Start animation
+        animate();
+
+        // Function to ensure all circles stay within the canvas
+        function gameCheckPosition(circle) {
+            if (circle.x > canvas.width) {
+                circle.x = 0; // Reappear at left side
+            } else if (circle.x < 0) {
+                circle.x = canvas.width; // Reappear at right side
+            }
+
+            if (circle.y > canvas.height) {
+                circle.y = 0; // Reappear at top
+            } else if (circle.y < 0) {
+                circle.y = canvas.height; // Reappear at bottom
+            }
+        }
+
+        // Add code for drawing the circles and initializing the physics engine
+        var view = new View();
+        var physikz = new Physics();
+
+        // Helper functions for random circle generation
+        var draw = {
+            randomCircleInArea: function(canvas, randomSize = true, randomColor = true, color = "#999", lineWidth = 2) {
+                var radius = randomSize ? Math.random() * 50 + 10 : 30; // Random radius
+                var x = Math.random() * (canvas.width - 2 * radius) + radius;
+                var y = Math.random() * (canvas.height - 2 * radius) + radius;
+                var circle = new Circle(x, y, radius, color, lineWidth);
+                return circle;
+            }
+        };
+
+        // Helper function for applying random velocity
+        physikz.addRandomVelocity = function(circle, canvas, maxXVelocity, maxYVelocity) {
+            circle.velocity = {
+                x: Math.random() * maxXVelocity - (maxXVelocity / 2),
+                y: Math.random() * maxYVelocity - (maxYVelocity / 2)
+            };
+        };
+
+        // Physics update function
+        physikz.updatePosition = function(circle) {
+            circle.x += circle.velocity.x;
+            circle.y += circle.velocity.y;
+        };
+
+        // Circle class for handling circles
+        function Circle(x, y, radius, color, lineWidth) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+            this.lineWidth = lineWidth;
+        }
+
+        // View class to manage visual updates
+        function View() {
+            this.addChild = function(circle) {
+                // Add circle to canvas here (could be implemented with a draw function)
+                context.beginPath();
+                context.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
+                context.fillStyle = circle.color;
+                context.fill();
+                context.lineWidth = circle.lineWidth;
+                context.stroke();
+            };
+        }
     </script>
 </body>
 </html>
