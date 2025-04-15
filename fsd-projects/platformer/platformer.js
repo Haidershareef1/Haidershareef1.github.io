@@ -1,152 +1,66 @@
-var init = function (window) {
-  'use strict';
-  var
-      draw = window.opspark.draw,
-      physikz = window.opspark.racket.physikz,
-     
-      app = window.opspark.makeApp(),
-      canvas = app.canvas,
-      view = app.view,
-      fps = draw.fps('#000');
-     
- 
-  window.opspark.makeGame = function() {
-     
-      window.opspark.game = {};
-      var game = window.opspark.game;
-     
-      ///////////////////
-      // PROGRAM SETUP //
-      ///////////////////
-     
-      // TODO 1 : Declare and initialize our variables
-      var circle;
-      var circles = [];
-
-
-
-
-      // TODO 2 : Create a function that draws a circle
-      function drawCircle() {
-          circle = draw.randomCircleInArea(canvas, true, true, "#999", 2);
-          physikz.addRandomVelocity(circle, canvas, 5, 5);
-          view.addChild(circle);
-          circles.push(circle);
+$(function () {
+    // initialize canvas and context when able to
+    canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
+    window.addEventListener("load", loadJson);
+  
+    function setup() {
+      if (firstTimeSetup) {
+        halleImage = document.getElementById("player");
+        projectileImage = document.getElementById("projectile");
+        cannonImage = document.getElementById("cannon");
+        $(document).on("keydown", handleKeyDown);
+        $(document).on("keyup", handleKeyUp);
+        firstTimeSetup = false;
+        //start game
+        setInterval(main, 1000 / frameRate);
       }
-
-
-
-
-      // TODO 3 : Call the drawCircle() function
-     // drawCircle();
-     // drawCircle();
-     // drawCircle();
-     // drawCircle();
-     // drawCircle();
-
-
-      // TODO 7 : Use a loop to create multiple circles
-      for (var i = 0; i < 100; i++){
-          drawCircle(i);
-      }
-
-
-
-
-
-
-      ///////////////////
-      // PROGRAM LOGIC //
-      ///////////////////
-     
-      /*
-      This Function is called 60 times/second, producing 60 frames/second.
-      In each frame, for every circle, it should redraw that circle
-      and check to see if it has drifted off the screen.        
-      */
-      function update() {
-          // TODO 4 : Update the position of each circle using physikz.updatePosition()
-     // physikz.updatePosition(circles[0]);
-     // physikz.updatePosition(circles[1]);
-     // physikz.updatePosition(circles[2]);
-     // physikz.updatePosition(circles[3]);
-     // physikz.updatePosition(circles[4]);
-         
-          // TODO 5 : Call game.checkCirclePosition() on your circles
-     // game.checkCirclePosition(circles[0]);
-     // game.checkCirclePosition(circles[1]);
-     // game.checkCirclePosition(circles[2]);
-     // game.checkCirclePosition(circles[3]);
-     // game.checkCirclePosition(circles[4]);
-
-
-
-
-          // TODO 8 / TODO 9 : Iterate over the array
-          for (var i = 0; i < circles.length; i++){
-              physikz.updatePosition(circles[i]);
-              game.checkCirclePosition(circles[i]);
-          }
-         
-
-
-
-
-
-
-      }
- 
-      /*
-      This Function should check the position of a circle that is passed to the
-      Function. If that circle drifts off the screen, this Function should move
-      it to the opposite side of the screen.
-      */
-      game.checkCirclePosition = function(circle) {
-
-
-          // if the circle has gone past the RIGHT side of the screen then place it on the LEFT
-     
-         
-          // TODO 6 : YOUR CODE STARTS HERE //////////////////////
-          if ( circle.x > canvas.width ) {
-              circle.x = 0;
-          }
-          if ( circle.x < 0 ) {
-              circle.x = canvas.width;
-          }
-          if ( circle.y > canvas.height ) {
-              circle.y = 0;
-          }
-          if ( circle.y < 0 ) {
-              circle.y = canvas.height;
-          }
-
-
-          // YOUR TODO 6 CODE ENDS HERE //////////////////////////
-      }
-     
-      /////////////////////////////////////////////////////////////
-      // --- NO CODE BELOW HERE  --- DO NOT REMOVE THIS CODE --- //
-      /////////////////////////////////////////////////////////////
-     
-      view.addChild(fps);
-      app.addUpdateable(fps);
-     
-      game.circle = circle;
-      game.circles = circles;
-      game.drawCircle = drawCircle;
-      game.update = update;
-     
-      app.addUpdateable(window.opspark.game);
-  }
-};
-
-
-// DO NOT REMOVE THIS CODE //////////////////////////////////////////////////////
-if((typeof process !== 'undefined') &&
-  (typeof process.versions.node !== 'undefined')) {
-  // here, export any references you need for tests //
-  module.exports = init;
-}
-
-
+  
+      // Create walls - do not delete or modify this code
+      createPlatform(-50, -50, canvas.width + 100, 50); // top wall
+      createPlatform(-50, canvas.height - 10, canvas.width + 100, 200, "navy"); // bottom wall
+      createPlatform(-50, -50, 50, canvas.height + 500); // left wall
+      createPlatform(canvas.width, -50, 50, canvas.height + 100); // right wall
+  
+      //////////////////////////////////
+      // ONLY CHANGE BELOW THIS POINT //
+      //////////////////////////////////
+  
+      // TODO 1 - Enable the Grid
+  
+  
+      // TODO 2 - Create Platforms
+      createPlatform(400, 610, 100, 15, "blue");
+      createPlatform(200, 500, 50, 15, "red");
+      createPlatform(450, 420, 100, 15, "red");
+      createPlatform(750, 500, 100, 15, "red");
+      createPlatform(1000, 610, 100, 15, "red");
+      createPlatform(1350, 480, 50, 15, "red");
+      createPlatform(1080, 450, 100, 15, "red");
+      createPlatform(1100, 200, 50, 15, "red");
+      createPlatform(1350, 330, 50, 15, "red");
+      createPlatform(480, 200, 50, 15, "red");
+      createPlatform(725, 300, 50, 15, "red");
+      createPlatform(150, 275, 50, 15, "red");
+      createPlatform(850, 120, 100, 15, "red");
+    
+  
+      // TODO 3 - Create Collectables
+      createCollectable("database", 155, 170, 0.5, 0.7);
+      createCollectable("database", 1355, 430, 0.5, 0.7);
+      createCollectable("database", 880, 80, 0.5, 0.7);
+      
+      // TODO 4 - Create Cannons
+      createCannon("top", 350, 3000);
+      createCannon("top", 650, 2500);
+      createCannon("top", 1300, 2800);
+      createCannon("right", 100, 2500);
+      createCannon("right", 750, 3000);
+      createCannon("right", 250, 3500);
+      //////////////////////////////////
+      // ONLY CHANGE ABOVE THIS POINT //
+      //////////////////////////////////
+    }
+  
+    registerSetup(setup);
+  });
